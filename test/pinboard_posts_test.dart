@@ -186,6 +186,18 @@ void main() {
                     'shared': 'yes',
                     'toread': 'no',
                     'tags': 'wishlist new'
+                  },
+                  {
+                    'href':
+                        'https://novelkeys.xyz/products/25-slot-switch-tester',
+                    'description': '',
+                    'extended': '',
+                    'meta': '508c6176f510c203098fb0c5e75fd53a',
+                    'hash': '3e569b02bb9df0203afb604eea548ea0',
+                    'time': '2018-12-23T07:05:49Z',
+                    'shared': 'yes',
+                    'toread': 'no',
+                    'tags': ''
                   }
                 ]
               },
@@ -205,11 +217,12 @@ void main() {
       );
       expect(response.date, isNotNull);
       expect(response.user, 'test');
-      expect(response.posts.length, 1);
+      expect(response.posts.length, 2);
       expect(response.posts[0], TypeMatcher<Post>());
       expect(response.posts[0].shared, isTrue);
       expect(response.posts[0].toread, isFalse);
       expect(response.posts[0].tags, ['wishlist', 'new']);
+      expect(response.posts[1].tags, []);
     });
 
     test('can get recent posts', () async {

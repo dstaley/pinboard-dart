@@ -56,7 +56,10 @@ class Post {
       time: json['time'],
       shared: yesNoToBool(value: json['shared']),
       toread: yesNoToBool(value: json['toread']),
-      tags: (json['tags'] as String).split(' '),
+      tags: (json['tags'] as String)
+          .split(' ')
+          .where((s) => s.isNotEmpty)
+          .toList(),
     );
   }
 
