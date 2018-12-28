@@ -88,6 +88,42 @@ void main() {
       expect(response.length, '11');
     });
 
+    test('getting a non-existant note throws NotFoundError', () async {
+      var client = Pinboard(
+        username: 'test',
+        token: 'thisisthetoken',
+        client: MockClient((request) async {
+          expect(request.url.host, 'api.pinboard.in');
+          expect(request.url.path, '/v1/notes/123');
+          expect(
+            request.url.queryParameters,
+            {
+              'auth_token': 'test:thisisthetoken',
+              'format': 'json',
+            },
+          );
+          return Response(
+            json.encode(
+              {
+                'error': "the thing you looked for wasn't found",
+                'error_code': '404',
+              },
+            ),
+            404,
+            headers: {
+              'Content-Type': 'application/json; charset=utf-8',
+            },
+          );
+        }),
+      );
+      expect(
+        () async {
+          var response = await client.notes.get(id: '123');
+        },
+        throwsA(TypeMatcher<NotFoundError>()),
+      );
+    });
+
     test('Note.toString returns a String', () {
       var result = Note(
         id: '123',

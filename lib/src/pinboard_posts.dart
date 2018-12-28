@@ -181,6 +181,33 @@ class PinboardUpdate {
   }
 }
 
+/// Represents an API response containing a map with a `result_code` key.
+class PinboardResultCode {
+  /// The result code.
+  // ignore: non_constant_identifier_names
+  String result_code;
+
+  /// Create an instance of PinboardResultCode.
+  PinboardResultCode({
+    // ignore: non_constant_identifier_names
+    this.result_code,
+  });
+
+  /// Create an instance of PinboardResultCode from JSON.
+  factory PinboardResultCode.fromJson(Map<String, Object> json) {
+    return PinboardResultCode(
+      result_code: json['result_code'],
+    );
+  }
+
+  String toString() {
+    var properties = {
+      'result_code': result_code,
+    };
+    return 'PinboardResultCode$properties';
+  }
+}
+
 /// Class containing the methods for the `posts` resource of the Pinboard API.
 class PostsResource extends PinboardResource {
   /// Create an instance of PostsResponse.
@@ -247,7 +274,11 @@ class PostsResource extends PinboardResource {
       method: 'delete',
       options: options,
     );
-    return PinboardResultCode.fromJson(response);
+    var result = PinboardResultCode.fromJson(response);
+    if (result.result_code == 'item not found') {
+      throw NotFoundError('Post with URL "$url" not found.');
+    }
+    return result;
   }
 
   /// Returns one or more posts on a single day matching the arguments. If no

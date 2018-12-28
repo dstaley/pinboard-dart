@@ -17,6 +17,54 @@ bool yesNoToBool({
   return value == 'yes';
 }
 
+/// Base Exception class
+class PinboardError implements Exception {
+  /// The error message
+  final String message;
+
+  /// Create an instance of PinboardError
+  PinboardError(this.message);
+
+  @override
+  String toString() => 'Pinboard Error: $message';
+}
+
+/// Thrown when the Pinboard API returns a 401 (or when a token isn't set).
+class UnauthorizedError extends PinboardError {
+  /// Create an instance of UnauthorizedError
+  UnauthorizedError(String message) : super(message);
+}
+
+/// Thrown when the Pinboard API returns a 403.
+class ForbiddenError extends PinboardError {
+  /// Create an instance of ForbiddenError
+  ForbiddenError(String message) : super(message);
+}
+
+/// Thrown when the Pinboard API returns a 404.
+class NotFoundError extends PinboardError {
+  /// Create an instance of NotFoundError
+  NotFoundError(String message) : super(message);
+}
+
+/// Thrown when the Pinboard API returns a 429.
+class TooManyRequestsError extends PinboardError {
+  /// Create an instance of TooManyRequestsError
+  TooManyRequestsError(String message) : super(message);
+}
+
+/// Thrown when the Pinboard API returns a 500.
+class InternalServerError extends PinboardError {
+  /// Create an instance of InternalServerError
+  InternalServerError(String message) : super(message);
+}
+
+/// Thrown when the Pinboard API returns a 503.
+class ServiceUnavailableError extends PinboardError {
+  /// Create an instance of ServiceUnavailableError
+  ServiceUnavailableError(String message) : super(message);
+}
+
 /// Base class from which all other resources extend.
 class PinboardResource {
   /// The path of the resource.
@@ -37,6 +85,9 @@ class PinboardResource {
     @required String method,
     Map<String, String> options,
   }) async {
+    if (_pb.username == null || _pb.token == null) {
+      throw UnauthorizedError('username and token must not be null');
+    }
     var optionsWithAuthToken = Map<String, Object>.from(options ?? {})
       ..addAll({
         'auth_token': '${_pb.username}:${_pb.token}',
@@ -50,6 +101,28 @@ class PinboardResource {
       queryParameters: optionsWithAuthToken,
     );
     final response = await _pb.client.get(uri);
+    switch (response.statusCode) {
+      case 401:
+        throw UnauthorizedError(response.body);
+        break;
+      case 403:
+        throw ForbiddenError('Forbidden');
+        break;
+      case 404:
+        throw NotFoundError('Item not found.');
+        break;
+      case 429:
+        throw TooManyRequestsError('Too many requests.');
+        break;
+      case 500:
+        throw InternalServerError('Internal Server Error');
+        break;
+      case 503:
+        throw ServiceUnavailableError('Service Unavailable');
+        break;
+      default:
+        break;
+    }
     return json.decode(response.body) as T;
   }
 }
@@ -77,32 +150,5 @@ class PinboardResult {
       'result': result,
     };
     return 'PinboardResult$properties';
-  }
-}
-
-/// Represents an API response containing a map with a `result_code` key.
-class PinboardResultCode {
-  /// The result code.
-  // ignore: non_constant_identifier_names
-  String result_code;
-
-  /// Create an instance of PinboardResultCode.
-  PinboardResultCode({
-    // ignore: non_constant_identifier_names
-    this.result_code,
-  });
-
-  /// Create an instance of PinboardResultCode from JSON.
-  factory PinboardResultCode.fromJson(Map<String, Object> json) {
-    return PinboardResultCode(
-      result_code: json['result_code'],
-    );
-  }
-
-  String toString() {
-    var properties = {
-      'result_code': result_code,
-    };
-    return 'PinboardResultCode$properties';
   }
 }

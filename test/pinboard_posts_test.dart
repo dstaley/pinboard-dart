@@ -115,6 +115,42 @@ void main() {
       expect(response.result_code, 'done');
     });
 
+    test('deleting a non-existent URL throws NotFoundError', () async {
+      var client = Pinboard(
+        username: 'test',
+        token: 'thisisthetoken',
+        client: MockClient((request) async {
+          expect(request.url.host, 'api.pinboard.in');
+          expect(request.url.path, '/v1/posts/delete');
+          expect(
+            request.url.queryParameters,
+            {
+              'url': 'https://google.com',
+              'auth_token': 'test:thisisthetoken',
+              'format': 'json',
+            },
+          );
+          return Response(
+            json.encode(
+              {'result_code': 'item not found'},
+            ),
+            200,
+            headers: {
+              'Content-Type': 'application/json; charset=utf-8',
+            },
+          );
+        }),
+      );
+      expect(
+        () async {
+          var response = await client.posts.delete(
+            url: 'https://google.com',
+          );
+        },
+        throwsA(TypeMatcher<NotFoundError>()),
+      );
+    });
+
     test('can get posts', () async {
       var client = Pinboard(
         username: 'test',
@@ -426,6 +462,11 @@ void main() {
 
     test('PinboardUpdate.toString returns a String', () {
       var result = PinboardUpdate(update_time: DateTime.parse('2018-12-25'));
+      expect(result.toString(), TypeMatcher<String>());
+    });
+
+    test('PinboardResultCode.toString returns a String', () {
+      var result = PinboardResultCode(result_code: 'done');
       expect(result.toString(), TypeMatcher<String>());
     });
   });

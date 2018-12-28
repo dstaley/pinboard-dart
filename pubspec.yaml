@@ -1,6 +1,6 @@
 name: pinboard
 description: A library that provides a nice interface to communicate with the Pinboard API.
-version: 1.0.1
+version: 1.1.0
 homepage: https://github.com/dstaley/pinboard-dart
 author: Dylan Staley <staley.dylan@gmail.com>
 
